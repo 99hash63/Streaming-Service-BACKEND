@@ -1,0 +1,5 @@
+# /config/local.toml/
+# /dist/
+/node_modules
+.vscode/*
+# .env
