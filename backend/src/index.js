@@ -6,6 +6,8 @@ const cors = require('cors');
 const dotenv = require ('dotenv');
 const app = express();
 const cookieParser = require("cookie-parser");
+//filse system import for video stream
+const fs = require("fs");
 require("dotenv").config();
 
 const PORT = process.env.PORT || config.get('server.port')
@@ -50,7 +52,33 @@ app.listen(PORT,()=>{
 app.use("/auth", require("./api/routers/userRouter"))
 app.use("/customer", require("./api/routers/customerRouter"))
 
+//get video endpoint
+app.get('/video', (req, res) => {
+  const range = req.headers.range;
+  if(!range){
+      res.status(400).send("Requires Ramge header")
+  }
+  const videoPath = "../myVid.mp4";
+  const videoSize = fs.statSync("myVid.mp4").size;
 
+  // Parse Range
+  const CHUNK_SIZE = 10 ** 6; //1MB
+  const START = Number(range.replace(/\D/g, ""));
+  const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
+
+  const contentLength = end - start + 1;
+  const headers = {
+      "Content-Range": `bytes ${start}-${end}/${videoSize}`,
+      "Accept-Ranges": "bytes",
+      "Content-Length": "contentLength",
+      "Content-Type": "video/mp4",
+  };
+  res.writeHead(206, headers);
+
+  const videoStream = fs.createReadStream(videoPath, {start, end});
+
+  videoStream.pipe(res);
+});
 
 
 
