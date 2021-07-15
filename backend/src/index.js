@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require ('dotenv');
 const app = express();
-// const cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const PORT = process.env.PORT || config.get('server.port')
@@ -21,10 +21,10 @@ app.get("/", (req, res) => {
     res.send("It works"); 
 });
 
-//middleware to read json text into req mody
+//middleware to pass json objects into req.body
 app.use(express.json());
-
-// app.use(cookieParser());
+//middleware to pass cookie into req.cookies
+app.use(cookieParser());
  
 //connect to mongoDB
 const URL= process.env.MONGODB_URL;
@@ -48,7 +48,7 @@ app.listen(PORT,()=>{
 //set up routes
 
 app.use("/auth", require("./api/routers/userRouter"))
-
+app.use("/customer", require("./api/routers/customerRouter"))
 
 
 
