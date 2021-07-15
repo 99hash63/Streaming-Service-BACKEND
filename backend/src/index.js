@@ -1,7 +1,7 @@
 const config = require('config')
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require ('dotenv');
 const app = express();
@@ -15,13 +15,15 @@ app.use(cors({
     origin: [host],
     credentials: true,
 }));
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
     res.send("It works"); 
 });
 
+//middleware to read json text into req mody
 app.use(express.json());
+
 // app.use(cookieParser());
  
 //connect to mongoDB
@@ -43,7 +45,9 @@ app.listen(PORT,()=>{
     console.log(`Server running on PORT: ${PORT}`)
 })
 
+//set up routes
 
+app.use("/auth", require("./api/routers/userRouter"))
 
 
 
