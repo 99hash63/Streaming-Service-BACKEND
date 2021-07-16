@@ -11,6 +11,22 @@ router.post("/add", auth, async(req,res)=>{
     try{
         const {categoryID, name, desc} = req.body;
 
+        //@validations
+        // validating required fields
+        if(!categoryID || !name || !desc)
+            return res.status(400).json({
+                erroMessage: "Please enter all required fields."
+            });
+        
+            
+        //Checking if categoryID already exists
+        const existindID = await Category.findOne({categoryID: categoryID})
+        if(existindID)
+            return res.status(400).json({
+                erroMessage: "Category with same ID already exists"
+            });
+
+
         const newCategory = new Category({categoryID, name, desc})
         await newCategory.save()
         res.json("Category Added");

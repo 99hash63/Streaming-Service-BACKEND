@@ -9,6 +9,20 @@ router.post("/add", auth, async(req,res)=>{
     try{
         const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
 
+        //@validations
+        // validating required fields
+        if(!purchaseID || !movieID || !userID || !purchaseDate || !price)
+            return res.status(400).json({
+                erroMessage: "Please enter all required fields."
+            });
+        
+        //Checking if purchaseID already exists
+        const existindID = await Purchase.findOne({purchaseID: purchaseID})
+        if(existindID)
+            return res.status(400).json({
+                erroMessage: "Purchase with same ID already exists"
+            });
+
         const newPurchase = new Purchase({purchaseID, movieID, userID, purchaseDate, price})
         await newPurchase.save()
         res.json("Purchased The Movie");

@@ -9,6 +9,21 @@ router.post("/add", auth, async(req,res)=>{
     try{
         const {movieID, name, category, desc, runtime} = req.body;
 
+        //@validations
+        // validating required fields
+        if(!movieID || !name || !category || !desc || !runtime)
+            return res.status(400).json({
+                erroMessage: "Please enter all required fields."
+            });
+        
+        //Checking if movieID already exists
+        const existindID = await Movie.findOne({movieID: movieID})
+        if(existindID)
+            return res.status(400).json({
+                erroMessage: "Movie with same ID already exists"
+            });
+
+
         const newMovie = new Movie({movieID, name, category, desc, runtime})
         await newMovie.save()
         res.json("Movie Added");
