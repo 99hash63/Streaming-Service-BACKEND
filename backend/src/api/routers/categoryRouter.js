@@ -85,14 +85,13 @@ router.get('/get/:id', async(req, res) => {
 //@access   private
 router.put("/update/:id", [
         // @validations
-        check('categoryID', 'categoryID is empty').not().isEmpty().trim().escape(),
         check('name', 'name is empty').not().isEmpty().trim().escape(),
         check('desc', 'desc is empty').not().isEmpty().trim().escape(),
     ],
     auth, async(req, res) =>{        
     
         try{
-            const {categoryID, name, desc} = req.body;
+            const {name, desc} = req.body;
 
             //handling request validations
             const error = validationResult(req);
@@ -101,7 +100,7 @@ router.put("/update/:id", [
                     erroMessage: error
                 });
 
-            const updateCategory = {categoryID, name, desc}
+            const updateCategory = {name, desc}
             let id = req.params.id;
             const updatedCategory = await Category.findByIdAndUpdate(id , updateCategory)
             if(!updatedCategory)

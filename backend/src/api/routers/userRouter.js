@@ -11,11 +11,11 @@ const {check, validationResult} = require('express-validator');
 //@access   public
 router.post("/", [
         // @validations
-        check('email', 'email is empty').not().isEmpty(),
-        check('email', 'invalid email address').isEmail().normalizeEmail(),
-        check('password', 'password is empty or too short!').not().isEmpty().isLength({min: 6}),
-        check('passwordVerify', 'passwordVerify is empty!').not().isEmpty(),
-        check('passwordVerify', 'passwords do not match').custom((value, {req}) => (value === req.body.password))
+        check('email', 'email is empty').not().isEmpty().trim().escape(),
+        check('email', 'invalid email address').isEmail().normalizeEmail().trim().escape(),
+        check('password', 'password is empty or too short!').not().isEmpty().trim().escape().isLength({min: 6}),
+        check('passwordVerify', 'passwordVerify is empty!').not().isEmpty().trim().escape(),
+        check('passwordVerify', 'passwords do not match').trim().escape().custom((value, {req}) => (value === req.body.password))
 
     ],
 
@@ -74,9 +74,9 @@ router.post("/", [
 //@access   public
 router.post("/login",[
         // @validations
-        check('email', 'email is empty').not().isEmpty(),
-        check('email', 'invalid email address').isEmail().normalizeEmail(),
-        check('password', 'invalid password').not().isEmpty().isLength({min: 6}),
+        check('email', 'email is empty').not().isEmpty().trim().escape(),
+        check('email', 'invalid email address').isEmail().normalizeEmail().trim().escape(),
+        check('password', 'invalid password').not().isEmpty().trim().escape().isLength({min: 6}),
     ], 
     async(req, res)=>{
         try{
@@ -176,11 +176,11 @@ router.get('/get/:id', auth, async(req, res) => {
 //@access   private
 router.put("/update/:id",[
         // @validations
-        check('email', 'email is empty').not().isEmpty(),
-        check('email', 'invalid email address').isEmail().normalizeEmail(),
-        check('password', 'password is empty or too short!').not().isEmpty().isLength({min: 6}),
-        check('passwordVerify', 'passwordVerify is empty!').not().isEmpty(),
-        check('passwordVerify', 'passwords do not match').custom((value, {req}) => (value === req.body.password))
+        check('email', 'email is empty').not().isEmpty().trim().escape(),
+        check('email', 'invalid email address').isEmail().normalizeEmail().trim().escape(),
+        check('password', 'password is empty or too short!').not().isEmpty().trim().escape().isLength({min: 6}),
+        check('passwordVerify', 'passwordVerify is empty!').not().isEmpty().trim().escape(),
+        check('passwordVerify', 'passwords do not match').trim().escape().custom((value, {req}) => (value === req.body.password))
     ],
     auth, async(req, res) =>{        
     
