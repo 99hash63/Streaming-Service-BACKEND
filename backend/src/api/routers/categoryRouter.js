@@ -61,6 +61,10 @@ router.get('/get/:id', async(req, res) => {
         let id = req.params.id;
 
         const CategoryRequset = await Category.findById(id)
+        if(!CategoryRequset)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.json(CategoryRequset);
     }catch(err){
         console.log(err);
@@ -79,7 +83,11 @@ router.put("/update/:id", auth, async(req, res) =>{
 
         const updateCategory = {categoryID, name, desc}
         let id = req.params.id;
-        const update = await Category.findByIdAndUpdate(id , updateCategory)
+        const updatedCategory = await Category.findByIdAndUpdate(id , updateCategory)
+        if(!updatedCategory)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.json({status: "Category Updated"});
     }catch(err){
         console.log(err);
@@ -94,7 +102,11 @@ router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;
 
-        await Category.findByIdAndDelete(Id)
+        const deletedCategory = await Category.findByIdAndDelete(Id)
+        if(!deletedCategory)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.status(200).send({status: "Category deleted"});
     }catch(err){
         console.log(err.message);

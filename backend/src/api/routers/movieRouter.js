@@ -57,6 +57,10 @@ router.get('/get/:id', async(req, res) => {
         let id = req.params.id;
 
         const MovieRequset = await Movie.findById(id)
+        if(!MovieRequset)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.json(MovieRequset);
     }catch(err){
         console.log(err);
@@ -75,7 +79,11 @@ router.put("/update/:id", auth, async(req, res) =>{
 
         const updateMovie = {movieID, name, category, desc, runtime}
         let id = req.params.id;
-        const update = await Movie.findByIdAndUpdate(id , updateMovie)
+        const updatedMovie = await Movie.findByIdAndUpdate(id , updateMovie)
+        if(!updatedMovie)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.json({status: "Movie Updated"});
     }catch(err){
         console.log(err);
@@ -90,7 +98,11 @@ router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;
 
-        await Movie.findByIdAndDelete(Id)
+        const deletedMovie = await Movie.findByIdAndDelete(Id)
+        if(!deletedMovie)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.status(200).send({status: "Movie deleted"});
     }catch(err){
         console.log(err.message);
