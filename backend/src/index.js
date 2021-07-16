@@ -63,7 +63,9 @@ app.listen(PORT,()=>{
 //set up routes
 
 app.use("/auth", require("./api/routers/userRouter"))
-app.use("/customer", require("./api/routers/customerRouter"))
+app.use("/movies", require("./api/routers/movieRouter"))
+app.use("/categories", require("./api/routers/categoryRouter"))
+app.use("/purchases", require("./api/routers/purchaseRouter"))
 
 // //get video endpoint
 // app.get('/video', (req, res) => {
