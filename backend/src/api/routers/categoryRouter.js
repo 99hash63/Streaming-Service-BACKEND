@@ -6,7 +6,7 @@ const auth = require("../middlewares/auth");
 
 //@route    POST http://localhost:5000/categories/add
 //@desc     Save new category to the database
-//@access   public
+//@access   private
 router.post("/add", auth, async(req,res)=>{
     try{
         const {categoryID, name, desc} = req.body;
@@ -25,7 +25,7 @@ router.post("/add", auth, async(req,res)=>{
 //@route    GET http://localhost:5000/categories/get
 //@desc     Get all categories from the database
 //@access   public
-router.get("/get", auth, async(req,res)=>{
+router.get("/get", async(req,res)=>{
     try{
         const CategoryRequsets = await Category.find()
         res.json(CategoryRequsets);
@@ -40,7 +40,7 @@ router.get("/get", auth, async(req,res)=>{
 //@route    GET http://localhost:5000/categories/get/:id
 //@desc     Get category for a perticular ID
 //@access   public
-router.get('/get/:id', auth, async(req, res) => {
+router.get('/get/:id', async(req, res) => {
     try{
         let id = req.params.id;
 
@@ -55,7 +55,7 @@ router.get('/get/:id', auth, async(req, res) => {
 
 //@route    PUT http://localhost:5000/categories/update/:id
 //@desc     Update category with a perticular ID
-//@access   public
+//@access   private
 router.put("/update/:id", auth, async(req, res) =>{        
    
     try{
@@ -73,7 +73,7 @@ router.put("/update/:id", auth, async(req, res) =>{
 
 //@route    DELETE http://localhost:5000/categories/delete/:id
 //@desc     Dlete category with a perticular ID
-//@access   public
+//@access   private
 router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;

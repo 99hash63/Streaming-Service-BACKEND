@@ -4,7 +4,7 @@ const auth = require("../middlewares/auth");
 
 //@route    POST http://localhost:5000/purchases/add
 //@desc     Save new purchase to the database
-//@access   public
+//@access   private
 router.post("/add", auth, async(req,res)=>{
     try{
         const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
@@ -21,7 +21,7 @@ router.post("/add", auth, async(req,res)=>{
 
 //@route    GET http://localhost:5000/purchases/get
 //@desc     Get all purchases from the database
-//@access   public
+//@access   private
 router.get("/get", auth, async(req,res)=>{
     try{
         const PurchaseRequests = await Purchase.find()
@@ -36,7 +36,7 @@ router.get("/get", auth, async(req,res)=>{
 
 //@route    GET http://localhost:5000/purchases/get/:id
 //@desc     Get purchase for a perticular ID
-//@access   public
+//@access   private
 router.get('/get/:id', auth, async(req, res) => {
     try{
         let id = req.params.id;
@@ -52,7 +52,7 @@ router.get('/get/:id', auth, async(req, res) => {
 
 //@route    PUT http://localhost:5000/purchases/update/:id
 //@desc     Update purchase with a perticular ID
-//@access   public
+//@access   private
 router.put("/update/:id", auth, async(req, res) =>{        
    
     try{
@@ -70,7 +70,7 @@ router.put("/update/:id", auth, async(req, res) =>{
 
 //@route    DELETE http://localhost:5000/purchases/delete/:id
 //@desc     Dlete purchase wit a perticular ID
-//@access   public
+//@access   private
 router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;
