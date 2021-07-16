@@ -82,7 +82,6 @@ router.get('/get/:id', auth, async(req, res) => {
 //@access   private
 router.put("/update/:id", [
         // @validations
-        check('purchaseID', 'purchaseID is empty').not().isEmpty().trim().escape(),
         check('movieID', 'movieID is empty').not().isEmpty().trim().escape(),
         check('userID', 'userID is empty').not().isEmpty().trim().escape(),
         check('price', 'price is empty').not().isEmpty().trim().escape(),
@@ -90,7 +89,7 @@ router.put("/update/:id", [
     auth, async(req, res) =>{        
     
         try{
-            const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
+            const {movieID, userID, purchaseDate, price} = req.body;
 
             //handling request validations
             const error = validationResult(req);
@@ -99,7 +98,7 @@ router.put("/update/:id", [
                     erroMessage: error
                 });
 
-            const updatePurchase = {purchaseID, movieID, userID, purchaseDate, price}
+            const updatePurchase = {movieID, userID, purchaseDate, price}
             let id = req.params.id;
             const updatedPurchase = await Purchase.findByIdAndUpdate(id , updatePurchase)
             if(!updatedPurchase)

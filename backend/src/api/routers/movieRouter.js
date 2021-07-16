@@ -83,7 +83,6 @@ router.get('/get/:id', async(req, res) => {
 //@access   private
 router.put("/update/:id", [
         // @validations
-        check('movieID', 'movieID is empty').not().isEmpty().trim().escape(),
         check('name', 'name is empty').not().isEmpty().trim().escape(),
         check('category', 'category is empty').not().isEmpty().trim().escape(),
         check('desc', 'desc is empty').not().isEmpty().trim().escape(),
@@ -92,7 +91,7 @@ router.put("/update/:id", [
     auth, async(req, res) =>{        
     
         try{
-            const {movieID, name, category, desc, runtime} = req.body;
+            const {name, category, desc, runtime} = req.body;
 
             //handling request validations
             const error = validationResult(req);
@@ -101,7 +100,7 @@ router.put("/update/:id", [
                     erroMessage: error
                 });
 
-            const updateMovie = {movieID, name, category, desc, runtime}
+            const updateMovie = {name, category, desc, runtime}
             let id = req.params.id;
             const updatedMovie = await Movie.findByIdAndUpdate(id , updateMovie)
             if(!updatedMovie)
