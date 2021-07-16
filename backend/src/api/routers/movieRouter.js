@@ -2,8 +2,6 @@ const router = require("express").Router();
 const Movie = require("../models/movieModel");
 const auth = require("../middlewares/auth");
 
-
-
 //@route    POST http://localhost:5000/movies/add
 //@desc     Save new movie to the database
 //@access   public
