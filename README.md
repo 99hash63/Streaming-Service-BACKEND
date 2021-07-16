@@ -1,8 +1,9 @@
 #Streaming-Service-BACKEND is a REST API created using Node Js and MongoDB,<br />
-#A crud for Movie, Category(Movie category), Users, Purchase models,<br />
+#A CRUD for Movie, Category(Movie category), Users, Purchase models,<br />
 #User authentication using JWT Tokens,<br />
 #Passwords are hashed using bcrypt,<br />
-#All request fields are validated using express-validator,
-#All the errors within endpoints are handles and relevant http status codes are returned,
+#Private endpoints using "auth" middleware,<br />
+#All request fields are validated using express-validator,<br />
+#All the errors within endpoints are handled and relevant http status codes are returned,<br />
 #All endpoints are working and checked using Insomnia
 
