@@ -156,6 +156,10 @@ router.get('/get/:id', auth, async(req, res) => {
         let id = req.params.id;
 
         const UserRequset = await User.findById(id)
+        if(!UserRequset)
+            return res.status(400).json({
+                erroMessage: "invalid user id"
+            });
         res.json(UserRequset);
     }catch(err){
         console.log(err);
@@ -200,7 +204,11 @@ router.put("/update/:id", auth, async(req, res) =>{
 
         const updateUser = {email, password, passwordVerify}
         let id = req.params.id;
-        const update = await User.findByIdAndUpdate(id , updateUser)
+        const updatedUser = await User.findByIdAndUpdate(id , updateUser)
+        if(!updatedUser)
+            return res.status(400).json({
+                erroMessage: "invalid user id"
+            });
         res.json({status: "User Updated"});
     }catch(err){
         console.log(err);
@@ -215,7 +223,11 @@ router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;
 
-        await User.findByIdAndDelete(Id)
+        const deletedUser = await User.findByIdAndDelete(Id);
+        if(!deletedUser)
+            return res.status(400).json({
+                erroMessage: "invalid user id"
+            });
         res.status(200).send({status: "User deleted"});
     }catch(err){
         console.log(err.message);
