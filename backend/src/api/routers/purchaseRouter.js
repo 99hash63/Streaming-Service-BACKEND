@@ -56,6 +56,10 @@ router.get('/get/:id', auth, async(req, res) => {
         let id = req.params.id;
 
         const PurchaseRequest = await Purchase.findById(id)
+        if(!PurchaseRequest)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.json(PurchaseRequest);
     }catch(err){
         console.log(err);
@@ -74,7 +78,11 @@ router.put("/update/:id", auth, async(req, res) =>{
 
         const updatePurchase = {purchaseID, movieID, userID, purchaseDate, price}
         let id = req.params.id;
-        const update = await Purchase.findByIdAndUpdate(id , updatePurchase)
+        const updatedPurchase = await Purchase.findByIdAndUpdate(id , updatePurchase)
+        if(!updatedPurchase)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.json({status: "Purchase Updated"});
     }catch(err){
         console.log(err);
@@ -89,7 +97,11 @@ router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;
 
-        await Purchase.findByIdAndDelete(Id)
+        const deletedPurchase = await Purchase.findByIdAndDelete(Id)
+        if(!deletedPurchase)
+            return res.status(400).json({
+                erroMessage: "invalid id"
+            });
         res.status(200).send({status: "Purchase deleted"});
     }catch(err){
         console.log(err.message);
