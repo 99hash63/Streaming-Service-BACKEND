@@ -2,13 +2,15 @@ const router = require("express").Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const auth = require("../middlewares/auth")
 
 
-//endpoint for register user
+//@route    POST http://localhost:5000/auth
+//@desc     Save or register new user
+//@access   public
 router.post("/", async(req, res)=>{
 
     try{
-        //seperate request body to constants
         const {email, password, passwordVerify} = req.body;
 
         // @validations
@@ -69,10 +71,12 @@ router.post("/", async(req, res)=>{
     }
 });
 
-//endpoint for login user
+
+//@route    POST http://localhost:5000/auth/login
+//@desc     endpoint for user login
+//@access   public
 router.post("/login", async(req, res)=>{
     try{
-        //seperate request body to constants
         const {email, password} = req.body;
 
         //@validations
@@ -82,7 +86,7 @@ router.post("/login", async(req, res)=>{
                 erroMessage: "Please enter all required field."
             });
 
-        //checking if enail is registered
+        //checking if email is registered
         const existingUser = await User.findOne({email: email});
         if(!existingUser)
             return res.status(401).json({
@@ -112,11 +116,13 @@ router.post("/login", async(req, res)=>{
 
     }catch(err){
         console.error(err);
-        res.status(500).send();
+        res.status(500).send({status: "Could not Login", error: err.message});
     }
 });
 
-//endpoint for logout
+//@route    GET http://localhost:5000/auth/logout
+//@desc     endpoint for user logout
+//@access   public
 router.get("/logout",(req, res)=>{
     res.cookie("token", "", {
         httpOnly: true,
@@ -124,6 +130,99 @@ router.get("/logout",(req, res)=>{
     })
     .send();
 });
+
+
+
+//@route    GET http://localhost:5000/auth/get
+//@desc     Get all users from the database
+//@access   private
+router.get("/get", auth, async(req,res)=>{
+    try{
+        const UserRequsets = await User.find()
+        res.json(UserRequsets);
+    }catch(err){
+        console.log(err);
+        res.status(500).send({status: "Error with getting users", error: err.message});
+    }
+})
+
+
+
+//@route    GET http://localhost:5000/auth/get/:id
+//@desc     Get user for a perticular ID
+//@access   private
+router.get('/get/:id', auth, async(req, res) => {
+    try{
+        let id = req.params.id;
+
+        const UserRequset = await User.findById(id)
+        res.json(UserRequset);
+    }catch(err){
+        console.log(err);
+        res.status(500).send({status: "Error with getting user", error: err.message});
+    }
+});
+   
+
+//@route    PUT http://localhost:5000/auth/update/:id
+//@desc     Update user with a perticular ID
+//@access   private
+router.put("/update/:id", auth, async(req, res) =>{        
+   
+    try{
+        const {email, password, passwordVerify} = req.body;
+
+        // @validations
+        // validating required fields
+        if(!email || !password || !passwordVerify)
+            return res.status(400).json({
+                erroMessage: "Please enter all required field."
+            });
+        
+        //validating password length
+        if(password.length < 6)
+            return res.status(400).json({
+                erroMessage: "Password should be atleast 6 chars long."
+            });
+
+        //Checking if password and passwordVerify match
+        if(password !== passwordVerify)
+            return res.status(400).json({
+                erroMessage: "Passwords did not match!."
+            });
+        
+        //Checking if user email already exists
+        const existingUser = await User.findOne({email: email})
+        if(existingUser)
+            return res.status(400).json({
+                erroMessage: "An account with this email already exists"
+            });
+
+        const updateUser = {email, password, passwordVerify}
+        let id = req.params.id;
+        const update = await User.findByIdAndUpdate(id , updateUser)
+        res.json({status: "User Updated"});
+    }catch(err){
+        console.log(err);
+        res.status(500).send({status: "Error with updating user", error: err.message});
+    }
+});
+
+//@route    DELETE http://localhost:5000/auth/delete/:id
+//@desc     Delete user with a perticular ID
+//@access   private
+router.delete("/delete/:id", auth, async(req,res)=>{
+    try{
+        let Id = req.params.id;
+
+        await User.findByIdAndDelete(Id)
+        res.status(200).send({status: "User deleted"});
+    }catch(err){
+        console.log(err.message);
+        res.status(500).send({status: "error with deleting user", error: err.message});
+    }
+});
+
 
 
 module.exports = router;
