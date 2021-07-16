@@ -2,122 +2,125 @@ const router = require("express").Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const auth = require("../middlewares/auth")
+const auth = require("../middlewares/auth");
+const {check, validationResult} = require('express-validator');
 
 
 //@route    POST http://localhost:5000/auth
 //@desc     Save or register new user
 //@access   public
-router.post("/", async(req, res)=>{
-
-    try{
-        const {email, password, passwordVerify} = req.body;
-
+router.post("/", [
         // @validations
-        // validating required fields
-        if(!email || !password || !passwordVerify)
-            return res.status(400).json({
-                erroMessage: "Please enter all required field."
-            });
-        
-        //validating password length
-        if(password.length < 6)
-            return res.status(400).json({
-                erroMessage: "Password should be atleast 6 chars long."
-            });
+        check('email', 'email is empty').not().isEmpty(),
+        check('email', 'invalid email address').isEmail().normalizeEmail(),
+        check('password', 'password is empty or too short!').not().isEmpty().isLength({min: 6}),
+        check('passwordVerify', 'passwordVerify is empty!').not().isEmpty(),
+        check('passwordVerify', 'passwords do not match').custom((value, {req}) => (value === req.body.password))
 
-        //Checking if password and passwordVerify match
-        if(password !== passwordVerify)
-            return res.status(400).json({
-                erroMessage: "Passwords did not match!."
-            });
-        
-        //Checking if user email already exists
-        const existingUser = await User.findOne({email: email})
-        if(existingUser)
-            return res.status(400).json({
-                erroMessage: "An account with this email already exists"
-            });
+    ],
 
-        //@hash the password
-        const salt = await bcrypt.genSalt();
-        const passwordHash = await bcrypt.hash(password, salt);
-        console.log(passwordHash)
-        
-        //@create new user document and save to the DB
-        const newUser = new User({
-            email, passwordHash
-        })
-        const savedUser = await newUser.save();
+    async(req, res)=>{
+        try{
+            const {email, password, passwordVerify} = req.body;
 
-        //@login the user immediately after creating account
-        //sign the token
-        const token = jwt.sign(
-            {
-            userID: savedUser._id,
-            userEmail: savedUser.email
-            }, 
-            process.env.JWT_SECRET
-        );
+            //handling request validations
+            const error = validationResult(req);
+            if(!error.isEmpty())
+                return res.status(400).json({
+                    erroMessage: error
+                });
         
-        //send the token to the browser on a HTTP-only cookie
-        res.cookie("token", token,{
-            httpOnly: true,
-        }).send();
+            //Checking if user email already exists
+            const existingUser = await User.findOne({email: email})
+            if(existingUser)
+                return res.status(400).json({
+                    erroMessage: "An account with this email already exists"
+                });
+            
+            //@hash the password
+            const salt = await bcrypt.genSalt();
+            const passwordHash = await bcrypt.hash(password, salt);
+            
+            //@create new user document and save to the DB
+            const newUser = new User({
+                email, passwordHash
+            })
+            const savedUser = await newUser.save();
 
-    }catch(err){
-        console.error(err);
-        res.status(500).send({status: "Error with creating user", error: err.message});
-    }
+            //@login the user immediately after creating account
+            //sign the token
+            const token = jwt.sign(
+                {
+                userID: savedUser._id,
+                userEmail: savedUser.email
+                }, 
+                process.env.JWT_SECRET
+            );
+            
+            //send the token to the browser on a HTTP-only cookie
+            res.cookie("token", token,{
+                httpOnly: true,
+            }).send();
+
+        }catch(err){
+            console.error(err);
+            res.status(500).send({status: "Error with creating user", error: err.message});
+        }
 });
 
 
 //@route    POST http://localhost:5000/auth/login
 //@desc     endpoint for user login
 //@access   public
-router.post("/login", async(req, res)=>{
-    try{
-        const {email, password} = req.body;
+router.post("/login",[
+        // @validations
+        check('email', 'email is empty').not().isEmpty(),
+        check('email', 'invalid email address').isEmail().normalizeEmail(),
+        check('password', 'invalid password').not().isEmpty().isLength({min: 6}),
+    ], 
+    async(req, res)=>{
+        try{
+            const {email, password} = req.body;
 
-        //@validations
-        // validating required fields
-        if(!email || !password)
-            return res.status(400).json({
-                erroMessage: "Please enter all required field."
-            });
+            //handling request validations
+            const error = validationResult(req);
+            if(!error.isEmpty())
+                return res.status(400).json({
+                    erroMessage: error
+                });
 
-        //checking if email is registered
-        const existingUser = await User.findOne({email: email});
-        if(!existingUser)
-            return res.status(401).json({
-                errorMessage: "Wrong email or password"
-            });
+            //checking if email is registered
+            const existingUser = await User.findOne({email: email});
+            if(!existingUser)
+                return res.status(401).json({
+                    errorMessage: "Wrong email or password"
+                });
 
-        //validating password match
-        const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
-        if(!passwordCorrect)
-            return res.status(401).json({
-                errorMessage: "Wrong email or password"
-            });
+            //validating password match
+            const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
+            if(!passwordCorrect)
+                return res.status(401).json({
+                    errorMessage: "Wrong email or password"
+                });
 
-        //@sign the token
-        const token = jwt.sign(
-            {
-            userID: existingUser._id,
-            userEmail: existingUser.email
-            }, 
-            process.env.JWT_SECRET
-        );
-        
-        //@send the token to the browser on a HTTP-only cookie
-        res.cookie("token", token,{
-            httpOnly: true,
-        }).send();
+            //@sign the token
+            const token = jwt.sign(
+                {
+                userID: existingUser._id,
+                userEmail: existingUser.email
+                }, 
+                process.env.JWT_SECRET
+            );
+            
+            //@send the token to the browser on a HTTP-only cookie
+            res.cookie("token", token,{
+                httpOnly: true,
+            }).send();
 
-    }catch(err){
-        console.error(err);
-        res.status(500).send({status: "Could not Login", error: err.message});
-    }
+        }catch(err){
+            console.error(err);
+            res.status(500).send({status: "Could not Login", error: err.message});
+        }
 });
 
 //@route    GET http://localhost:5000/auth/logout
@@ -171,49 +174,45 @@ router.get('/get/:id', auth, async(req, res) => {
 //@route    PUT http://localhost:5000/auth/update/:id
 //@desc     Update user with a perticular ID
 //@access   private
-router.put("/update/:id", auth, async(req, res) =>{        
-   
-    try{
-        const {email, password, passwordVerify} = req.body;
-
+router.put("/update/:id",[
         // @validations
-        // validating required fields
-        if(!email || !password || !passwordVerify)
-            return res.status(400).json({
-                erroMessage: "Please enter all required field."
-            });
-        
-        //validating password length
-        if(password.length < 6)
-            return res.status(400).json({
-                erroMessage: "Password should be atleast 6 chars long."
-            });
+        check('email', 'email is empty').not().isEmpty(),
+        check('email', 'invalid email address').isEmail().normalizeEmail(),
+        check('password', 'password is empty or too short!').not().isEmpty().isLength({min: 6}),
+        check('passwordVerify', 'passwordVerify is empty!').not().isEmpty(),
+        check('passwordVerify', 'passwords do not match').custom((value, {req}) => (value === req.body.password))
+    ],
+    auth, async(req, res) =>{        
+    
+        try{
+            const {email, password, passwordVerify} = req.body;
 
-        //Checking if password and passwordVerify match
-        if(password !== passwordVerify)
-            return res.status(400).json({
-                erroMessage: "Passwords did not match!."
-            });
-        
-        //Checking if user email already exists
-        const existingUser = await User.findOne({email: email})
-        if(existingUser)
-            return res.status(400).json({
-                erroMessage: "An account with this email already exists"
-            });
+            //handling request validations
+            const error = validationResult(req);
+            if(!error.isEmpty())
+                return res.status(400).json({
+                    erroMessage: error
+                });
+    
+            //Checking if user email already exists
+            const existingUser = await User.findOne({email: email})
+            if(existingUser)
+                return res.status(400).json({
+                    erroMessage: "An account with this email already exists"
+                });
 
-        const updateUser = {email, password, passwordVerify}
-        let id = req.params.id;
-        const updatedUser = await User.findByIdAndUpdate(id , updateUser)
-        if(!updatedUser)
-            return res.status(400).json({
-                erroMessage: "invalid user id"
-            });
-        res.json({status: "User Updated"});
-    }catch(err){
-        console.log(err);
-        res.status(500).send({status: "Error with updating user", error: err.message});
-    }
+            const updateUser = {email, password, passwordVerify}
+            let id = req.params.id;
+            const updatedUser = await User.findByIdAndUpdate(id , updateUser)
+            if(!updatedUser)
+                return res.status(400).json({
+                    erroMessage: "invalid user id"
+                });
+            res.json({status: "User Updated"});
+        }catch(err){
+            console.log(err);
+            res.status(500).send({status: "Error with updating user", error: err.message});
+        }
 });
 
 //@route    DELETE http://localhost:5000/auth/delete/:id
