@@ -4,10 +4,25 @@ const auth = require("../middlewares/auth");
 
 //@route    POST http://localhost:5000/movies/add
 //@desc     Save new movie to the database
-//@access   public
+//@access   private
 router.post("/add", auth, async(req,res)=>{
     try{
         const {movieID, name, category, desc, runtime} = req.body;
+
+        //@validations
+        // validating required fields
+        if(!movieID || !name || !category || !desc || !runtime)
+            return res.status(400).json({
+                erroMessage: "Please enter all required fields."
+            });
+        
+        //Checking if movieID already exists
+        const existindID = await Movie.findOne({movieID: movieID})
+        if(existindID)
+            return res.status(400).json({
+                erroMessage: "Movie with same ID already exists"
+            });
+
 
         const newMovie = new Movie({movieID, name, category, desc, runtime})
         await newMovie.save()
@@ -22,7 +37,7 @@ router.post("/add", auth, async(req,res)=>{
 //@route    GET http://localhost:5000/movies/get
 //@desc     Get all movies from the database
 //@access   public
-router.get("/get", auth, async(req,res)=>{
+router.get("/get", async(req,res)=>{
     try{
         const MovieRequsets = await Movie.find()
         res.json(MovieRequsets);
@@ -37,7 +52,7 @@ router.get("/get", auth, async(req,res)=>{
 //@route    GET http://localhost:5000/movies/get/:id
 //@desc     Get movie for a perticular ID
 //@access   public
-router.get('/get/:id', auth, async(req, res) => {
+router.get('/get/:id', async(req, res) => {
     try{
         let id = req.params.id;
 
@@ -52,7 +67,7 @@ router.get('/get/:id', auth, async(req, res) => {
 
 //@route    PUT http://localhost:5000/movies/update/:id
 //@desc     Update movie with a perticular ID
-//@access   public
+//@access   private
 router.put("/update/:id", auth, async(req, res) =>{        
    
     try{
@@ -70,7 +85,7 @@ router.put("/update/:id", auth, async(req, res) =>{
 
 //@route    DELETE http://localhost:5000/movies/delete/:id
 //@desc     Dlete movie wit a perticular ID
-//@access   public
+//@access   private
 router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;

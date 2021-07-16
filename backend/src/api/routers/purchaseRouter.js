@@ -4,10 +4,24 @@ const auth = require("../middlewares/auth");
 
 //@route    POST http://localhost:5000/purchases/add
 //@desc     Save new purchase to the database
-//@access   public
+//@access   private
 router.post("/add", auth, async(req,res)=>{
     try{
         const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
+
+        //@validations
+        // validating required fields
+        if(!purchaseID || !movieID || !userID || !purchaseDate || !price)
+            return res.status(400).json({
+                erroMessage: "Please enter all required fields."
+            });
+        
+        //Checking if purchaseID already exists
+        const existindID = await Purchase.findOne({purchaseID: purchaseID})
+        if(existindID)
+            return res.status(400).json({
+                erroMessage: "Purchase with same ID already exists"
+            });
 
         const newPurchase = new Purchase({purchaseID, movieID, userID, purchaseDate, price})
         await newPurchase.save()
@@ -21,7 +35,7 @@ router.post("/add", auth, async(req,res)=>{
 
 //@route    GET http://localhost:5000/purchases/get
 //@desc     Get all purchases from the database
-//@access   public
+//@access   private
 router.get("/get", auth, async(req,res)=>{
     try{
         const PurchaseRequests = await Purchase.find()
@@ -36,7 +50,7 @@ router.get("/get", auth, async(req,res)=>{
 
 //@route    GET http://localhost:5000/purchases/get/:id
 //@desc     Get purchase for a perticular ID
-//@access   public
+//@access   private
 router.get('/get/:id', auth, async(req, res) => {
     try{
         let id = req.params.id;
@@ -52,7 +66,7 @@ router.get('/get/:id', auth, async(req, res) => {
 
 //@route    PUT http://localhost:5000/purchases/update/:id
 //@desc     Update purchase with a perticular ID
-//@access   public
+//@access   private
 router.put("/update/:id", auth, async(req, res) =>{        
    
     try{
@@ -70,7 +84,7 @@ router.put("/update/:id", auth, async(req, res) =>{
 
 //@route    DELETE http://localhost:5000/purchases/delete/:id
 //@desc     Dlete purchase wit a perticular ID
-//@access   public
+//@access   private
 router.delete("/delete/:id", auth, async(req,res)=>{
     try{
         let Id = req.params.id;
