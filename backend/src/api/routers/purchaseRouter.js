@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const Purchase = require("../models/purchaseModel");
 const auth = require("../middlewares/auth");
+const {check, validationResult} = require('express-validator');
+
 
 //@route    POST http://localhost:5000/purchases/add
 //@desc     Save new purchase to the database

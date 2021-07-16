@@ -1,39 +1,46 @@
 const router = require("express").Router();
 const Category = require("../models/categoryModel");
 const auth = require("../middlewares/auth");
+const {check, validationResult} = require('express-validator');
+
 
 
 
 //@route    POST http://localhost:5000/categories/add
 //@desc     Save new category to the database
 //@access   private
-router.post("/add", auth, async(req,res)=>{
-    try{
-        const {categoryID, name, desc} = req.body;
-
-        //@validations
-        // validating required fields
-        if(!categoryID || !name || !desc)
-            return res.status(400).json({
-                erroMessage: "Please enter all required fields."
-            });
-        
+router.post("/add", [
+        // @validations
+        check('categoryID', 'categoryID is empty').not().isEmpty().trim().escape(),
+        check('name', 'name is empty').not().isEmpty().trim().escape(),
+        check('desc', 'desc is empty').not().isEmpty().trim().escape(),
+    ],
+    auth, async(req,res)=>{
+        try{
+            const {categoryID, name, desc} = req.body;
             
-        //Checking if categoryID already exists
-        const existindID = await Category.findOne({categoryID: categoryID})
-        if(existindID)
-            return res.status(400).json({
-                erroMessage: "Category with same ID already exists"
-            });
+            //handling request validations
+             const error = validationResult(req);
+             if(!error.isEmpty())
+                 return res.status(400).json({
+                     erroMessage: error
+                 });
+
+            //Checking if categoryID already exists
+            const existindID = await Category.findOne({categoryID: categoryID})
+            if(existindID)
+                return res.status(400).json({
+                    erroMessage: "Category with same ID already exists"
+                });
 
 
-        const newCategory = new Category({categoryID, name, desc})
-        await newCategory.save()
-        res.json("Category Added");
-    }catch(err){
-        console.error(err);
-        res.status(500).send({status: "Error with adding category", error: err.message});
-    }
+            const newCategory = new Category({categoryID, name, desc})
+            await newCategory.save()
+            res.json("Category Added");
+        }catch(err){
+            console.error(err);
+            res.status(500).send({status: "Error with adding category", error: err.message});
+        }
 });
 
 
@@ -76,23 +83,36 @@ router.get('/get/:id', async(req, res) => {
 //@route    PUT http://localhost:5000/categories/update/:id
 //@desc     Update category with a perticular ID
 //@access   private
-router.put("/update/:id", auth, async(req, res) =>{        
-   
-    try{
-        const {categoryID, name, desc} = req.body;
+router.put("/update/:id", [
+        // @validations
+        check('categoryID', 'categoryID is empty').not().isEmpty().trim().escape(),
+        check('name', 'name is empty').not().isEmpty().trim().escape(),
+        check('desc', 'desc is empty').not().isEmpty().trim().escape(),
+    ],
+    auth, async(req, res) =>{        
+    
+        try{
+            const {categoryID, name, desc} = req.body;
 
-        const updateCategory = {categoryID, name, desc}
-        let id = req.params.id;
-        const updatedCategory = await Category.findByIdAndUpdate(id , updateCategory)
-        if(!updatedCategory)
-            return res.status(400).json({
-                erroMessage: "invalid id"
-            });
-        res.json({status: "Category Updated"});
-    }catch(err){
-        console.log(err);
-        res.status(500).send({status: "Error with updating category", error: err.message});
-    }
+            //handling request validations
+            const error = validationResult(req);
+            if(!error.isEmpty())
+                return res.status(400).json({
+                    erroMessage: error
+                });
+
+            const updateCategory = {categoryID, name, desc}
+            let id = req.params.id;
+            const updatedCategory = await Category.findByIdAndUpdate(id , updateCategory)
+            if(!updatedCategory)
+                return res.status(400).json({
+                    erroMessage: "invalid id"
+                });
+            res.json({status: "Category Updated"});
+        }catch(err){
+            console.log(err);
+            res.status(500).send({status: "Error with updating category", error: err.message});
+        }
 });
 
 //@route    DELETE http://localhost:5000/categories/delete/:id
