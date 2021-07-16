@@ -7,31 +7,38 @@ const {check, validationResult} = require('express-validator');
 //@route    POST http://localhost:5000/purchases/add
 //@desc     Save new purchase to the database
 //@access   private
-router.post("/add", auth, async(req,res)=>{
-    try{
-        const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
+router.post("/add", [
+        // @validations
+        check('purchaseID', 'purchaseID is empty').not().isEmpty().trim().escape(),
+        check('movieID', 'movieID is empty').not().isEmpty().trim().escape(),
+        check('userID', 'userID is empty').not().isEmpty().trim().escape(),
+        check('price', 'price is empty').not().isEmpty().trim().escape(),
 
-        //@validations
-        // validating required fields
-        if(!purchaseID || !movieID || !userID || !purchaseDate || !price)
-            return res.status(400).json({
-                erroMessage: "Please enter all required fields."
-            });
-        
-        //Checking if purchaseID already exists
-        const existindID = await Purchase.findOne({purchaseID: purchaseID})
-        if(existindID)
-            return res.status(400).json({
-                erroMessage: "Purchase with same ID already exists"
-            });
+    ],auth, async(req,res)=>{
+        try{
+            const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
 
-        const newPurchase = new Purchase({purchaseID, movieID, userID, purchaseDate, price})
-        await newPurchase.save()
-        res.json("Purchased The Movie");
-    }catch(err){
-        console.error(err);
-        res.status(500).send({status: "Error with purchasing movie", error: err.message});
-    }
+            //handling request validations
+            const error = validationResult(req);
+            if(!error.isEmpty())
+                return res.status(400).json({
+                    erroMessage: error
+                });
+            
+            //Checking if purchaseID already exists
+            const existindID = await Purchase.findOne({purchaseID: purchaseID})
+            if(existindID)
+                return res.status(400).json({
+                    erroMessage: "Purchase with same ID already exists"
+                });
+
+            const newPurchase = new Purchase({purchaseID, movieID, userID, purchaseDate, price})
+            await newPurchase.save()
+            res.json("Purchased The Movie");
+        }catch(err){
+            console.error(err);
+            res.status(500).send({status: "Error with purchasing movie", error: err.message});
+        }
 });
 
 
@@ -73,23 +80,37 @@ router.get('/get/:id', auth, async(req, res) => {
 //@route    PUT http://localhost:5000/purchases/update/:id
 //@desc     Update purchase with a perticular ID
 //@access   private
-router.put("/update/:id", auth, async(req, res) =>{        
-   
-    try{
-        const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
+router.put("/update/:id", [
+        // @validations
+        check('purchaseID', 'purchaseID is empty').not().isEmpty().trim().escape(),
+        check('movieID', 'movieID is empty').not().isEmpty().trim().escape(),
+        check('userID', 'userID is empty').not().isEmpty().trim().escape(),
+        check('price', 'price is empty').not().isEmpty().trim().escape(),
+    ],
+    auth, async(req, res) =>{        
+    
+        try{
+            const {purchaseID, movieID, userID, purchaseDate, price} = req.body;
 
-        const updatePurchase = {purchaseID, movieID, userID, purchaseDate, price}
-        let id = req.params.id;
-        const updatedPurchase = await Purchase.findByIdAndUpdate(id , updatePurchase)
-        if(!updatedPurchase)
-            return res.status(400).json({
-                erroMessage: "invalid id"
-            });
-        res.json({status: "Purchase Updated"});
-    }catch(err){
-        console.log(err);
-        res.status(500).send({status: "Error with updating Purchase", error: err.message});
-    }
+            //handling request validations
+            const error = validationResult(req);
+            if(!error.isEmpty())
+                return res.status(400).json({
+                    erroMessage: error
+                });
+
+            const updatePurchase = {purchaseID, movieID, userID, purchaseDate, price}
+            let id = req.params.id;
+            const updatedPurchase = await Purchase.findByIdAndUpdate(id , updatePurchase)
+            if(!updatedPurchase)
+                return res.status(400).json({
+                    erroMessage: "invalid id"
+                });
+            res.json({status: "Purchase Updated"});
+        }catch(err){
+            console.log(err);
+            res.status(500).send({status: "Error with updating Purchase", error: err.message});
+        }
 });
 
 //@route    DELETE http://localhost:5000/purchases/delete/:id
